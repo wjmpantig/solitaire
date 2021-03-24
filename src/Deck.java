@@ -107,12 +107,20 @@ public class Deck {
 	
 	public String toString() {
 		String output = "";
+		int ctr = 0;
 		for(Card card : deck) {
-			output += card.toString() + "\n"; //escape character
+			output += ctr++ + ": " + card.toString() + "\n"; //escape character
 		}
+		
 		// D10
 		// CJ
 		return output;
+	}
+	
+	public ArrayList<Card> drawAllCards(){
+		ArrayList<Card> cards = new ArrayList<Card>(deck);
+		this.deck.clear();
+		return cards;
 	}
 	
 	
