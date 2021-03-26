@@ -3,7 +3,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.StringTokenizer;
-
+import java.util.ArrayList;
 
 
 
@@ -15,7 +15,6 @@ public class Game {
 	private CardStack talon;
 	private CardStack wasteTalon;
 	private CardStack[] foundation;
-	private CardStack drawCards;
 	private boolean isGameOver = false;
 	
 	private void init() {
@@ -98,6 +97,7 @@ public class Game {
 	
 	private void displayTable() {
 		System.out.println("Talon: " + talon.size());
+		System.out.println("Waste Talon: " + wasteTalon);
 		System.out.println("Foundations: ");
 		for(int i = 0; i < FOUNDATION_SIZE; i++) {
 			CardStack stack = foundation[i];
@@ -105,6 +105,13 @@ public class Game {
 		}
 		//print manuevrer
 		boolean hasCardsToShow = false;
+		int highestStackSize = 0;
+		for(int i =0; i < MANEUVRE_SIZE; i++ ) {
+			CardStack stack = maneuver[i];
+			if (highestStackSize < stack.size()) {
+				highestStackSize = stack.size();
+			}
+		}
 		int row = 0;
 		do {
 			String output = "";
@@ -122,10 +129,10 @@ public class Game {
 			}
 			System.out.println(output);
 			row++;
-		}while(hasCardsToShow);
+		}while(row < highestStackSize);
 	}
 	
-	private void moveManeuverCardToManeuver() {
+	private boolean moveManeuverCardToManeuver() {
 		boolean hasCardMoved = false;
 		for(int i = MANEUVRE_SIZE - 1; i >= 0 && !hasCardMoved; i--) {
 			CardStack stack  = maneuver[i];
@@ -146,9 +153,10 @@ public class Game {
 		if (!hasCardMoved) {
 			System.out.println("no card moved in maneuver");
 		}
+		return hasCardMoved;
 	}
 	
-	private void moveMaenuverCardToFoundation() {
+	private boolean moveMaenuverCardToFoundation() {
 		boolean hasCardMoved = false;
 		for(int i = MANEUVRE_SIZE - 1; i >= 0 && !hasCardMoved; i--) {
 			CardStack stack  = maneuver[i];
@@ -169,6 +177,66 @@ public class Game {
 		if (!hasCardMoved) {
 			System.out.println("no card moved in maneuver to foundation");
 		}
+		return hasCardMoved;
+	}
+	
+	public boolean talonWasteHasCards() {
+		return !wasteTalon.isEmpty();
+	}
+	
+	public void drawFromTalon() {
+		Card[] cards = null;
+		if (talon.size() > 3) {
+			cards = talon.drawCards(3);
+		} else {
+			cards = talon.drawCards(talon.size());
+		}
+		for(Card c : cards) {
+			c.setFaceUp();
+			wasteTalon.add(c);
+		}
+		System.out.println("drew " + cards.length +" cards from talon");
+	}
+	
+	public boolean talonHasCards() {
+		return !talon.isEmpty();
+	}
+	
+	public boolean moveTalonWasteToManeuver() {
+		boolean hasCardMoved = false;
+		Card card = wasteTalon.lastCard();
+		if (card.toString().equals("DA")) {
+			System.out.print("test");
+		}
+		for (int j = MANEUVRE_SIZE - 1; j >= 0 && !hasCardMoved; j--) {
+			CardStack target = maneuver[j];
+			hasCardMoved = target.insert(card);
+			if (hasCardMoved) {
+				wasteTalon.removeLastCard();
+				System.out.println("moved card " + card + " to maneuver column " + (j+1));
+			}
+		}
+		if (!hasCardMoved) {
+			System.out.println("no card moved in talon waste to manuever");
+		}
+		return hasCardMoved;
+	}
+	
+	public boolean moveTalonWasteToFoundation() {
+		boolean hasCardMoved = false;
+		Card card = wasteTalon.lastCard();
+		for (int j = FOUNDATION_SIZE - 1; j >= 0 && !hasCardMoved; j--) {
+			CardStack target = foundation[j];
+			hasCardMoved = target.insert(card);
+			if (hasCardMoved) {
+				wasteTalon.removeLastCard();
+				System.out.println("moved card " + card + " to foundation column " + (j+1));
+			}
+		}
+		if (!hasCardMoved) {
+			System.out.println("no card moved in talon waste to foundation");
+		}
+		return hasCardMoved;
 	}
 	
 	public static void main(String[] args) {
@@ -182,12 +250,38 @@ public class Game {
 //		System.out.println(deck);
 		game.distributeDeckToManeuvre(deck);
 		game.addDeckToTalon(deck);
-		
+		boolean hasCardMoved = false;
 		while(!game.isGameOver) { 
 			game.displayTable();
 			inputEnter();
-			game.moveManeuverCardToManeuver();
-			game.moveMaenuverCardToFoundation();
+			
+			hasCardMoved = game.moveManeuverCardToManeuver();
+			if (hasCardMoved) {
+				continue;
+			}
+			hasCardMoved = game.moveMaenuverCardToFoundation();
+			if (hasCardMoved) {
+				continue;
+			}
+			if (game.talonWasteHasCards()) {
+				hasCardMoved = game.moveTalonWasteToManeuver();
+			}
+			if (hasCardMoved) {
+				continue;
+			}
+			
+			if (game.talonWasteHasCards()) {
+				hasCardMoved = game.moveTalonWasteToFoundation();
+			}
+			if (hasCardMoved) {
+				continue;
+			}
+			if (!game.talonWasteHasCards() && game.talonHasCards()) {
+				game.drawFromTalon();
+			} else if (!hasCardMoved && game.talonHasCards()){
+				game.drawFromTalon();
+			}
+			hasCardMoved = false;
 		}
 
 		

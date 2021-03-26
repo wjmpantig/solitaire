@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 
 public class CardStack {
 	ArrayList<Card> cards = new ArrayList<Card>();
@@ -62,6 +63,9 @@ public class CardStack {
 	}
 	
 	public boolean canInsertCard(Card card) {
+		if (card == null) {
+			return false;
+		}
 		if(!descendingMode) {
 			if (isEmpty()) {
 				return card.getRank() == 0; // can insert king
@@ -87,5 +91,17 @@ public class CardStack {
 	
 	public void removeLastCard() {
 		cards.remove(cards.size() - 1);
+	}
+	
+	public Card[] drawCards(int count) {
+
+		Card[] arrayCards = new Card[count];
+		for(int i = 0; i < count; i++) {
+			arrayCards[i] = cards.get(cards.size() - i - 1);
+		}
+		for(int i = 0 ; i < count; i++) {
+			cards.remove(cards.size()-1);
+		}
+		return arrayCards;
 	}
 }
