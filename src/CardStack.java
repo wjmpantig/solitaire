@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CardStack {
-	ArrayList<Card> cards = new ArrayList<Card>();
+	private ArrayList<Card> cards = new ArrayList<Card>();
 	boolean descendingMode = true;
 	public CardStack() {
 		
@@ -103,5 +103,10 @@ public class CardStack {
 			cards.remove(cards.size()-1);
 		}
 		return arrayCards;
+	}
+	
+	public void moveAll(CardStack stack) {
+		stack.addAll(this.cards);
+		this.cards.clear();
 	}
 }

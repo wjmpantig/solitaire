@@ -160,18 +160,20 @@ public class Game {
 		boolean hasCardMoved = false;
 		for(int i = MANEUVRE_SIZE - 1; i >= 0 && !hasCardMoved; i--) {
 			CardStack stack  = maneuver[i];
-			Card card = stack.getHighestVisibleCard();
-			for (int j = FOUNDATION_SIZE - 1; j >= 0 && !hasCardMoved; j--) {
-				CardStack target = foundation[j];
-				if (i == j) {
-					continue;
+			for(int j =  stack.size() - 1; j >= 0 && !hasCardMoved; j--) {
+				Card card = stack.get(j);
+				if (!card.isFaceUp()) {
+					break;
+				}
+				for (int k = FOUNDATION_SIZE - 1; k >= 0 && !hasCardMoved; k--) {
+					CardStack target = foundation[k];
+					hasCardMoved = target.insert(card);
+					if (hasCardMoved) {
+						stack.removeLastCard();
+						System.out.println("moved card " + card + " to foundation column " + (k+1));
+					}
 				}
 				
-				hasCardMoved = target.insert(card);
-				if (hasCardMoved) {
-					stack.removeLastCard();
-					System.out.println("moved card " + card + " to foundation column " + (j+1));
-				}
 			}
 		}
 		if (!hasCardMoved) {
@@ -205,9 +207,6 @@ public class Game {
 	public boolean moveTalonWasteToManeuver() {
 		boolean hasCardMoved = false;
 		Card card = wasteTalon.lastCard();
-		if (card.toString().equals("DA")) {
-			System.out.print("test");
-		}
 		for (int j = MANEUVRE_SIZE - 1; j >= 0 && !hasCardMoved; j--) {
 			CardStack target = maneuver[j];
 			hasCardMoved = target.insert(card);
@@ -237,6 +236,11 @@ public class Game {
 			System.out.println("no card moved in talon waste to foundation");
 		}
 		return hasCardMoved;
+	}
+	
+	public void moveWasteBack() {
+		wasteTalon.moveAll(talon); 
+		System.out.println("moved all waste talon back to talon");
 	}
 	
 	public static void main(String[] args) {
@@ -280,6 +284,8 @@ public class Game {
 				game.drawFromTalon();
 			} else if (!hasCardMoved && game.talonHasCards()){
 				game.drawFromTalon();
+			} else if (!game.talonHasCards() && game.talonWasteHasCards()) {
+				game.moveWasteBack();
 			}
 			hasCardMoved = false;
 		}
