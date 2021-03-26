@@ -97,7 +97,14 @@ public class Game {
 	
 	private void displayTable() {
 		System.out.println("Talon: " + talon.size());
-		System.out.println("Waste Talon: " + wasteTalon);
+		System.out.print("Waste Talon: ");
+		for(int i = wasteTalon.size() - 3; i < wasteTalon.size(); i++) {
+			if (i < 0) {
+				continue;
+			}
+			System.out.print(wasteTalon.get(i) + ",");
+		}
+		System.out.println();
 		System.out.println("Foundations: ");
 		for(int i = 0; i < FOUNDATION_SIZE; i++) {
 			CardStack stack = foundation[i];
