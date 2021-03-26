@@ -42,7 +42,7 @@ public class CardStack {
 		return cards.isEmpty();
 	}
 	
-	public Card lastCard() {
+	public Card getLastCard() {
 		if (isEmpty()) {
 			return null;
 		}
@@ -70,14 +70,14 @@ public class CardStack {
 			if (isEmpty()) {
 				return card.getRank() == 0; // can insert king
 			}
-			Card lastCard = this.lastCard();
+			Card lastCard = this.getLastCard();
 			return card.getSuitRank() == lastCard.getSuitRank() && (lastCard.getRank() + 1 == card.getRank());
 		}
 		if (isEmpty()) {
 			return card.getRank() == 12; // can insert king
 		}
 		
-		Card lastCard = this.lastCard();
+		Card lastCard = this.getLastCard();
 		return !card.getColor().equals(lastCard.getColor()) && (lastCard.getRank() - 1 == card.getRank());
 	}
 	
