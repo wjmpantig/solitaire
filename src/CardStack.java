@@ -74,7 +74,7 @@ public class CardStack {
 			return card.getSuitRank() == lastCard.getSuitRank() && (lastCard.getRank() + 1 == card.getRank());
 		}
 		if (isEmpty()) {
-			return card.getSuitRank() == 12; // can insert king
+			return card.getRank() == 12; // can insert king
 		}
 		
 		Card lastCard = this.lastCard();
