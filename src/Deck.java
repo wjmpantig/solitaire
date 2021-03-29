@@ -2,6 +2,7 @@
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class Deck {
@@ -45,6 +46,10 @@ public class Deck {
 			}
 		}
 		this.deck = shuffledDeck;
+	}
+	
+	public void shuffleRandom() {
+		Collections.shuffle(deck);
 	}
 	
 	public Card give() {

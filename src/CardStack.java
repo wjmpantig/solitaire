@@ -12,6 +12,11 @@ public class CardStack {
 		this.descendingMode = descMode;
 	}
 	
+	public CardStack(boolean descMode, ArrayList<Card> cards) {
+		this.descendingMode = descMode;
+		this.cards = cards;
+	}
+	
 	
 	public void add(Card c) {
 		cards.add(c);
@@ -62,6 +67,16 @@ public class CardStack {
 		return highestVisibleCard;
 	}
 	
+	public int getHighestVisibleCardIndex() {
+		for(int i = 0; i < cards.size(); i++) {
+			Card card = cards.get(i);
+			if (card.isFaceUp()) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	public boolean canInsertCard(Card card) {
 		if (card == null) {
 			return false;
@@ -108,5 +123,36 @@ public class CardStack {
 	public void moveAll(CardStack stack) {
 		stack.addAll(this.cards);
 		this.cards.clear();
+	}
+	
+	public boolean insertStack(CardStack stack, int index) {
+		if (stack.isEmpty()) {
+			return false;
+		}
+		Card firstCard = stack.get(index);
+		if (this.canInsertCard(firstCard)) {
+			if(index == 0 && this.cards.isEmpty() && firstCard.getRank() == 12) {
+				return false;
+			}
+			for (int i = index; i < stack.size(); i++) {
+				this.cards.add(stack.get(i));
+			}
+//			for (int i = index; i < stack.size(); i++) {
+//				stack.cards.remove(i);
+//			}
+			if(stack.size() - index > 1) {
+				stack.removeFromIndex(index);				
+			} else {
+				stack.removeLastCard();
+			}
+			
+			return true;
+		}
+		return false;
+	}
+	
+	public void removeFromIndex(int i) {
+		List<Card> newCards = this.cards.subList(0, i);
+		this.cards = new ArrayList<Card>(newCards);
 	}
 }

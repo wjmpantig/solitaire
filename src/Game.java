@@ -15,7 +15,6 @@ public class Game {
 	private CardStack talon;
 	private CardStack wasteTalon;
 	private CardStack[] foundation;
-	private boolean isGameOver = false;
 	
 	private void init() {
 		maneuver = new CardStack[MANEUVRE_SIZE];
@@ -143,16 +142,19 @@ public class Game {
 		boolean hasCardMoved = false;
 		for(int i = MANEUVRE_SIZE - 1; i >= 0 && !hasCardMoved; i--) {
 			CardStack stack  = maneuver[i];
-			Card card = stack.getHighestVisibleCard();
-			for (int j = MANEUVRE_SIZE - 1; j >= 0 && !hasCardMoved; j--) {
-				CardStack target = maneuver[j];
-				if (i == j) {
+			int j = stack.getHighestVisibleCardIndex();
+			if (j < 0) {
+				continue;
+			}
+			Card card = stack.get(j);
+			for (int k = MANEUVRE_SIZE - 1; k >= 0 && !hasCardMoved; k--) {
+				CardStack target = maneuver[k];
+				if (i == k) {
 					continue;
 				}
-				hasCardMoved = target.insert(card);
+				hasCardMoved = target.insertStack(stack, j);
 				if (hasCardMoved) {
-					stack.removeLastCard();
-					System.out.println("moved card " + card + " to column " + (j+1));
+					System.out.println("moved card " + card + " to column " + (k+1));
 				}
 			}
 			
@@ -244,53 +246,92 @@ public class Game {
 		System.out.println("moved all waste talon back to talon");
 	}
 	
-	public static void main(String[] args) {
+	public boolean isSolitaire() {
 		
-		Game game = new Game();
-		game.init();
-		Deck deck = game.readDeckFromFile();
-//		System.out.println(deck);
-		int shuffleLimit = game.inputShuffleCount();
-		deck.shuffle(shuffleLimit);
-//		System.out.println(deck);
-		game.distributeDeckToManeuvre(deck);
-		game.addDeckToTalon(deck);
-		boolean hasCardMoved = false;
-		while(!game.isGameOver) { 
-			game.displayTable();
-			inputEnter();
-			
-			hasCardMoved = game.moveManeuverCardToManeuver();
-			if (hasCardMoved) {
-				continue;
+		for(int i = 0; i < FOUNDATION_SIZE; i++) {
+			if (foundation[i].size() != 13) {
+				return false;
 			}
-			hasCardMoved = game.moveMaenuverCardToFoundation();
-			if (hasCardMoved) {
-				continue;
-			}
-			if (game.talonWasteHasCards()) {
-				hasCardMoved = game.moveTalonWasteToManeuver();
-			}
-			if (hasCardMoved) {
-				continue;
-			}
-			
-			if (game.talonWasteHasCards()) {
-				hasCardMoved = game.moveTalonWasteToFoundation();
-			}
-			if (hasCardMoved) {
-				continue;
-			}
-			if (!game.talonWasteHasCards() && game.talonHasCards()) {
-				game.drawFromTalon();
-			} else if (!hasCardMoved && game.talonHasCards()){
-				game.drawFromTalon();
-			} else if (!game.talonHasCards() && game.talonWasteHasCards()) {
-				game.moveWasteBack();
-			}
-			hasCardMoved = false;
 		}
-
+		return true;
+	}
+	
+	public static void main(String[] args) {
+		int gameCtr=0;
+		int wins = 0;
+		int totalGames = 1000;
+		do {
+			System.out.println("game " + (gameCtr+1) + "-------------");
+			Game game = new Game();
+			game.init();
+			Deck deck = game.readDeckFromFile();
+//		System.out.println(deck);
+//		int shuffleLimit = game.inputShuffleCount();
+//		deck.shuffle(shuffleLimit);
+			deck.shuffleRandom();
+//		System.out.println(deck);
+			game.distributeDeckToManeuvre(deck);
+			game.addDeckToTalon(deck);
+			boolean hasCardMoved = false;
+			int drawCtr = 0;
+			while(!game.isSolitaire()) { 
+				game.displayTable();
+//			inputEnter();
+				
+				hasCardMoved = game.moveManeuverCardToManeuver();
+				if (hasCardMoved) {
+					drawCtr = 0;
+					continue;
+				}
+				hasCardMoved = game.moveMaenuverCardToFoundation();
+				if (hasCardMoved) {
+					drawCtr = 0;
+					continue;
+				}
+				if (game.talonWasteHasCards()) {
+					hasCardMoved = game.moveTalonWasteToManeuver();
+				}
+				if (hasCardMoved) {
+					drawCtr = 0;
+					continue;
+				}
+				
+				if (game.talonWasteHasCards()) {
+					hasCardMoved = game.moveTalonWasteToFoundation();
+				}
+				if (hasCardMoved) {
+					drawCtr = 0;
+					continue;
+				}
+				
+				if (!game.talonWasteHasCards() && game.talonHasCards()) {
+					game.drawFromTalon();
+				} else if (!hasCardMoved && game.talonHasCards()){
+					game.drawFromTalon();
+				} else if (!game.talonHasCards() && game.talonWasteHasCards()) {
+					game.moveWasteBack();
+					drawCtr++;
+				} else {
+					drawCtr++;
+				}
+				hasCardMoved = false;
+				System.out.println("Draw counter: " + drawCtr);
+				if (drawCtr == 10) {
+					break;
+				}
+			}
+			
+			if (game.isSolitaire()) {
+				game.displayTable();
+				System.out.println("Congratulations!!");
+				wins++;
+			} else {
+				System.out.println("Game over, you lose");
+			}
+			gameCtr++;
+		}while(gameCtr < totalGames);
+		float percentWin = wins / (float) totalGames;
+		System.out.printf("Win rate: %.2f", (percentWin * 100f) );
 		
 	}
 	
